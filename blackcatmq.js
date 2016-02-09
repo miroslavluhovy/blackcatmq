@@ -32,6 +32,7 @@ var BlackCatMQ = function (config) {
         self.serverType = config.serverType || 'net';
         self.authType = config.authType || 'none';
         self.serverOptions = config.serverOptions || { 'allowHalfOpen': true };
+        self.heartbeatInterval = config.heartbeatInterval || 1000;
         self.stompVersion = config.stompVersion ?
             config.stompVersion.slice(config.stompVersion.indexOf("1.")+2) || "0" : "0";
 
@@ -194,7 +195,8 @@ BlackCatMQ.prototype.send = function(frame) {
 BlackCatMQ.prototype.commands = {
     connect: function(socket, frame) {
         var self = this;
-
+        var sessionID = getId();
+        socket.sessionID = sessionID;
         if (self.auth) {
 
             var login = frame.header['login']
@@ -206,24 +208,27 @@ BlackCatMQ.prototype.commands = {
                 return stomp.ServerFrame.ERROR('connect error','passcode is required');
             }
 
-            self.auth.authenticate(login, passocde, function(err, user) {
+            self.auth.authenticate(login, passcode, function(err, user) {
                 if (err) {
                     return stomp.ServerFrame.ERROR('connect error','incorrect login or passcode');
                 }
 
-                var sessionID = getId();
-                socket.sessionID = sessionID;
+                socket.heartbeatInterval = setInterval(function() {
+                    console.log('heartbeat');
+                    self.protocolImpl.sendMessage(socket, stomp.ServerFrame.LF);
+                },self.heartbeatInterval);
                 self.sockets[sessionID] = socket;
 
-                return stomp.ServerFrame.CONNECTED(sessionID, self.identifier);
+                return stomp.ServerFrame.CONNECTED(sessionID, self.identifier, self.heartbeatInterval);
             });
         }
 
-        var sessionID = getId();
-        socket.sessionID = sessionID;
+        socket.heartbeatInterval = setInterval(function() {
+            self.protocolImpl.sendMessage(socket, stomp.ServerFrame.LF);
+        },self.heartbeatInterval);
         self.sockets[sessionID] = socket;
 
-        return stomp.ServerFrame.CONNECTED(sessionID, self.identifier);
+        return stomp.ServerFrame.CONNECTED(sessionID, self.identifier, self.heartbeatInterval);
     },
 
     subscribe: function(socket, frame) {
