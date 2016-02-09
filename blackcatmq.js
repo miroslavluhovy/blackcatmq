@@ -340,6 +340,12 @@ BlackCatMQ.prototype.commands = {
         }
 
         self.send(frame);
+
+        //Looks like the've requested a RECEIPT
+        var receiptID = frame.header['receipt'];
+        if (receiptID) {
+            return stomp.ServerFrame.RECEIPT(receiptID);
+        }
     },
 
     ack: function(socket, frame) {
@@ -367,7 +373,6 @@ BlackCatMQ.prototype.commands = {
         if (pos >= 0) {
             self.messages.queue.splice(pos, 1);
         }
-
         return stomp.ServerFrame.RECEIPT(messageID);
     },
 
