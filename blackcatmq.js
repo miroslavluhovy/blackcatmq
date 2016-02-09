@@ -69,7 +69,9 @@ var BlackCatMQ = function (config) {
                     self.protocolImpl.sendMessage(socket, stomp.ServerFrame.ERROR(ex, 'unrecoverable error'));
                 }
             },
-
+            error: function(err) {
+                console.log(err);
+            },
             disconnected: function(socket) {
                 self.commands.disconnect.call(self, socket, null);
             },

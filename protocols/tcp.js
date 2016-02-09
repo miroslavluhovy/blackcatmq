@@ -30,6 +30,9 @@ function createServer(broker, callbacks) {
             util.log(util.format('server is disconnected from %s:%s', remoteAddress.address, remoteAddress.port));
             callbacks.disconnected(socket);
         });
+        socket.on('error', function(err) {
+            console.log(err);
+        })
     });
 }
 

@@ -20,6 +20,9 @@ function createServer(broker, callbacks) {
             callbacks.debugDump(message.utf8Data);
             callbacks.frameReceived(webSocket, message.utf8Data);
         });
+        webSocket.on('error', function(err) {
+            console.log(err);
+        });
         
         webSocket.on('close', function() {
             util.log(util.format('websocket to %s:%s terminated', remoteAddress.address, remoteAddress.port));
