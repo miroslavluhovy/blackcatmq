@@ -195,8 +195,7 @@ BlackCatMQ.prototype.send = function(frame) {
 BlackCatMQ.prototype.commands = {
     connect: function(socket, frame) {
         var self = this;
-        var sessionID = getId();
-        socket.sessionID = sessionID;
+
         if (self.auth) {
 
             var login = frame.header['login']
@@ -212,16 +211,11 @@ BlackCatMQ.prototype.commands = {
                 if (err) {
                     return stomp.ServerFrame.ERROR('connect error','incorrect login or passcode');
                 }
-
-                socket.heartbeatInterval = setInterval(function() {
-                    console.log('heartbeat');
-                    self.protocolImpl.sendMessage(socket, stomp.ServerFrame.LF);
-                },self.heartbeatInterval);
-                self.sockets[sessionID] = socket;
-
-                return stomp.ServerFrame.CONNECTED(sessionID, self.identifier, self.heartbeatInterval);
             });
         }
+
+        var sessionID = getId();
+        socket.sessionID = sessionID;
 
         socket.heartbeatInterval = setInterval(function() {
             self.protocolImpl.sendMessage(socket, stomp.ServerFrame.LF);
