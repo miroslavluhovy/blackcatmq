@@ -287,7 +287,7 @@ BlackCatMQ.prototype.commands = {
 
         var destination = frame.header['destination'];
         var id = frame.header['id'];
-        if(self.config.stompVersion !== "0") {
+        if(self.stompVersion !== "0") {
             if (!id) {
                 return stomp.ServerFrame.ERROR('invalid parameters','you must specify an id to unsubscribe from');
             }
@@ -299,12 +299,12 @@ BlackCatMQ.prototype.commands = {
 
         var subscription;
 
-        if(self.config.stompVersion !== "0") {
+        if(self.stompVersion !== "0") {
             subscription = self.subscribesById["_"+id];
 
             if(subscription) {
                 delete self.subscribesById["_"+id];
-                delete subscribes[subscription.destination];
+                delete self.subscribes[subscription.destination];
             }
         } else {
             if (self.subscribes[destination]) {
